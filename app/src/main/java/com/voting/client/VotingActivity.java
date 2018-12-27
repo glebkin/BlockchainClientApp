@@ -136,24 +136,30 @@ public class VotingActivity extends AppCompatActivity {
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                        call.cancel();
+                        Log.e("VotingActivity", "Voting call failed");
                         BlockchainClientUtils.nodesList.remove(nodeIndex);
                         VotingActivity.this.vote(userKey, candidateKey, nodeIndex + 1);
                     }
 
                     @Override
-                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                        if (response.isSuccessful()) {
-                            VotingActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
+                    public void onResponse(@NonNull final Call call, @NonNull final Response response) throws IOException {
+
+                        VotingActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (response.isSuccessful()) {
                                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(VotingActivity.this);
                                     preferences.edit().putBoolean("isVoted", true).apply();
 
                                     Intent resultIntent = new Intent(VotingActivity.this, ResultsActivity.class);
                                     VotingActivity.this.startActivity(resultIntent);
+                                } else {
+                                    call.cancel();
+                                    VotingActivity.this.vote(userKey, candidateKey, nodeIndex + 1);
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 });
             } else {
@@ -162,7 +168,7 @@ public class VotingActivity extends AppCompatActivity {
                 ProgressBar progressBar = VotingActivity.this.findViewById(R.id.progressBar);
                 progressBar.setVisibility(View.INVISIBLE);
 
-                Toast.makeText(VotingActivity.this, "Нет свободных узлов", Toast.LENGTH_SHORT).show();
+                BlockchainClientUtils.syncNodesList();
             }
         } catch (Exception e) {
             Log.e("VotingActivity", e.getMessage(), e);

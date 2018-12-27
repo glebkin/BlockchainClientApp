@@ -57,8 +57,13 @@ public class ResultsActivity extends AppCompatActivity {
         updateChart();
     }
 
-    public void getResult(final int nodeIndex) {
+    public void getResult(int nodeIndex) {
         try {
+            if (nodeIndex == BlockchainClientUtils.nodesList.size()) {
+                BlockchainClientUtils.syncNodesList();
+                nodeIndex = 0;
+            }
+
             final OkHttpClient client = new OkHttpClient();
 
             Request request = new Request.Builder()
@@ -66,11 +71,12 @@ public class ResultsActivity extends AppCompatActivity {
                     .get()
                     .build();
 
+            final int finalNodeIndex = nodeIndex;
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
                     call.cancel();
-                    getResult(nodeIndex + 1);
+                    getResult(finalNodeIndex + 1);
                 }
 
                 @Override
@@ -89,16 +95,20 @@ public class ResultsActivity extends AppCompatActivity {
                                 resultMap.put(resArr[0], Integer.valueOf(resArr[1]));
                             }
                         }
-                    }
 
-                    ResultsActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ResultsActivity.this.updateChart();
-                            SwipeRefreshLayout swipeRefreshLayout = ResultsActivity.this.findViewById(R.id.refresh_chart);
-                            swipeRefreshLayout.setRefreshing(false);
-                        }
-                    });
+                        ResultsActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ResultsActivity.this.updateChart();
+                                SwipeRefreshLayout swipeRefreshLayout = ResultsActivity.this.findViewById(R.id.refresh_chart);
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
+                        });
+                    } else {
+                        Log.e(ResultsActivity.class.getName(), "Something went wrong");
+                        call.cancel();
+                        getResult(finalNodeIndex + 1);
+                    }
                 }
             });
         } catch (Exception e) {
