@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Клиент для голосования</string>
+    <string name="login_res">Войти</string>
+    <string name="logout_res">Выйти</string>
+    <string name="add_candidate_res">Добавить кандидата</string>
+    <string name="clear_candidates_res">Удалить всех кандидатов</string>
+</resources>
