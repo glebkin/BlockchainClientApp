@@ -21,7 +21,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class BlockchainClientUtils {
-    private static final String masterNodeUrl = "http://30866167.ngrok.io/";
+    private static final String masterNodeUrl = "https://blockchain-nodes-resolver.appspot.com/";
 
     public static Map<String, String> candidatesMap = new HashMap<>();
     public static List<String> nodesList = new ArrayList<>();
